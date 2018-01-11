@@ -91,7 +91,6 @@ std::string parse_file(std::string file_name) {
 			int gl_type = (type == "vs") ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
 			std::string shader_name = sub_matches[2].str();
 			std::string shader_id = shader_name + "." + type;
-			//std::cout << "filepath:" << sub_matches[1] << ", filename: " << sub_matches[2] << ", type: " << sub_matches[3] << ".\n";
 
 			std::vector<std::string> attributes = {};
 			std::vector<std::string> uniforms = {};
@@ -116,15 +115,14 @@ std::string parse_file(std::string file_name) {
 			std::string attribute_string = variable_array_to_string(attributes, "attributes");
 			std::string uniform_string = variable_array_to_string(uniforms, "uniforms");
 
-			//ofs << "export default {\n" << attribute_string << uniform_string << source << "\"\n}";
 			ifs.close();
-			return "\t\"" + shader_id + "\": {\n\t\t\"name\":\"" + shader_name + "\",\n\t\t\"type\":" + std::to_string(gl_type) + ",\n\t\t" + attribute_string + "\t\t" + uniform_string + "\t\t" + source + "\"\n\t}";
-
-		}
-		else {
-			std::cout << "Unrecognised file type: " << file_name << "\n";
-		}
+			return "\t\"" + shader_id + "\": {\n\t\t\"name\":\"" + shader_name + "\",\n\t\t\"type\":" +
+				std::to_string(gl_type) + ",\n\t\t" + attribute_string + "\t\t" + uniform_string +
+				"\t\t" + source + "\"\n\t}";
+		}		
 	}
+	std::cout << "Unrecognised file type: " << file_name << "\n";
+	return "";
 }
 
 int main(int argc, char** argv) {
@@ -154,23 +152,7 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout << target_directory << "\n";
-	//std::string input_file = argv[1];	
-	//std::string target_directory = argv[2];
-
-	//std::ifstream ifs(input_file);
-
-	//if (ifs.is_open()) {
-	//	std::regex input_file_parse("^(.*)\\\\(.*)\\.(vs|fs)\\.glsl$");
-	//	std::smatch sub_matches;
-
-	//	if (std::regex_match(input_file, sub_matches, input_file_parse)) {
-	//		//std::string type = sub_matches[3] != "" ? sub_matches[3] : sub_matches[4];
-	//		//std::cout << "filepath:" << sub_matches[1] << ", filename: " << sub_matches[2] << ", type: " << sub_matches[3] << ".\n";
-	//	}
-
-	//	std::string output_filename = sub_matches[2].str() + "." + sub_matches[3].str() + ".ts";
 	std::string output_file = target_directory + "shader-source.json";
-	//	std::cout << "output file: " << output_file << ".\n";
 
 	std::ofstream ofs(output_file);
 	if (ofs.is_open()) {
@@ -183,34 +165,6 @@ int main(int argc, char** argv) {
 		}
 		ofs << "}";
 		ofs.close();
-	//		std::vector<std::string> attributes = {};
-	//		std::vector<std::string> uniforms = {};
-	//		std::string source = ",\nsource: \"";
-
-	//		std::string current_line;
-	//		while (std::getline(ifs, current_line)) {
-	//			std::string trimmed_line = trim_line(current_line);
-
-	//			if (trimmed_line != "") {
-
-	//				find_variable_name(attributes, trimmed_line, "attribute");
-	//				find_variable_name(attributes, trimmed_line, "in");
-	//				find_variable_name(uniforms, trimmed_line, "uniform");
-
-	//				source += trimmed_line + "\\n";
-	//			}							
-	//		}
-
-	//		std::string attribute_string = variable_array_to_string(attributes, "attributes");
-	//		std::string uniform_string = variable_array_to_string(uniforms, "uniforms", ",\n");
-
-	//		ofs << "export default {\n" << attribute_string << uniform_string << source << "\"\n}";
-	//		ifs.close();
-	//		ofs.close();
-	//	}
-	//	else {
-	//		std::cout << "Invalid output file: " << output_file << ".\n";
-	//	}
 	}
 	else {
 		std::cout << "Could not open the output file: " << output_file << ".\n";
