@@ -3,7 +3,7 @@ and converts it to the follow json (based on gltf 1.0):
 
 ```typescript
 {   
-    [id: string]: Shader; // id = Shader.name + ("vs" | "fs")  
+    [id: string]: Shader; // id = Shader.name + (".vs" | ".fs")  
 }  
 ```
 where Shader = 
