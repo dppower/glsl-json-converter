@@ -9,14 +9,20 @@
 #define GL_FRAGMENT_SHADER 0x8B30
 #define GL_VERTEX_SHADER 0x8B31
 
+// Patterns for parsing glsl:
+const std::regex include_header("^#include <glsl-([0-9]{3})-?(es)?\\.h>$");
+const std::regex version_header("^#version ([0-9]{3})(?: es)?$");
+const std::regex trim_comments_spaces("^\\s*(?:(?:(.*?)\\s*[/]{2,}.*)|(?:(.*?)\\s*))$");
+const std::regex validate_line("^(?:(?:[a-z][a-zA-Z0-9\\s_+*\\-/=><&|^?:{().,;[\\]]*[;{})])|[}])$");
+// Files should have the extensions: .vs or .vs.glsl or .fs or .fs.glsl
+const std::regex input_file_name_pattern("^.*\\\\(.*)\\.(vs|fs)(?:\\.glsl)?$");
+
 std::string trim_line(std::string current_line, unsigned int line_count) {
 
 	std::string trimmed_line = "";
 
-	if (line_count == 1) {
-		std::regex include_header("^#include <glsl-([0-9]{3})-?(es)?\\.h>$");
-		std::smatch sub_matches;
-		
+	if (line_count == 1) {		
+		std::smatch sub_matches;		
 		if (std::regex_match(current_line, sub_matches, include_header)) {
 			trimmed_line = "#version " + sub_matches[1].str();
 			if (sub_matches[2].str() != "") {
@@ -24,18 +30,22 @@ std::string trim_line(std::string current_line, unsigned int line_count) {
 			}
 		}
 		else {
-			std::cout << "Syntax error(1): unrecognised glsl header file, " << current_line << "\n";
+			if (std::regex_match(current_line, sub_matches, version_header)) {
+				trimmed_line = current_line;
+			}
+			else {
+				std::cout << "Syntax error(1): unrecognised glsl version, " << current_line << "\n";
+			}
 		}
 	}
 	else {
-		std::regex trim_comments_spaces("^\\s*(?:(?:(.*?)\\s*[/]{2,}.*)|(?:(.*?)\\s*))$");
+		
 		std::smatch sub_matches;
 
 		if (std::regex_match(current_line, sub_matches, trim_comments_spaces)) {
 			std::string sub_string = sub_matches[1].str() + sub_matches[2].str();
 
 			if (sub_string != "") {
-				std::regex validate_line("^(?:(?:[a-z][a-zA-Z0-9\\s_+*\\-/=><&|^?:{().,;[\\]]*[;{})])|[}])$");
 
 				if (std::regex_match(sub_string.begin(), sub_string.end(), validate_line)) {
 					trimmed_line = sub_string;
@@ -82,14 +92,13 @@ std::string variable_array_to_string(const std::vector<std::string>& variable_ar
 
 std::string parse_file(std::string file_name) {
 	std::ifstream ifs(file_name);
-	if (ifs.is_open()) {
-		std::regex input_file_parse("^(.*)\\\\(.*)\\.(vs|fs)\\.glsl$");
+	if (ifs.is_open()) {		
 		std::smatch sub_matches;
 
-		if (std::regex_match(file_name, sub_matches, input_file_parse)) {
-			std::string type = sub_matches[3] != "" ? sub_matches[3].str() : sub_matches[4].str();
+		if (std::regex_match(file_name, sub_matches, input_file_name_pattern)) {
+			std::string type = sub_matches[2] != "" ? sub_matches[2].str() : sub_matches[3].str();
 			int gl_type = (type == "vs") ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
-			std::string shader_name = sub_matches[2].str();
+			std::string shader_name = sub_matches[1].str();
 			std::string shader_id = shader_name + "." + type;
 
 			std::vector<std::string> attributes = {};
@@ -119,9 +128,14 @@ std::string parse_file(std::string file_name) {
 			return "\t\"" + shader_id + "\": {\n\t\t\"name\":\"" + shader_name + "\",\n\t\t\"type\":" +
 				std::to_string(gl_type) + ",\n\t\t" + attribute_string + "\t\t" + uniform_string +
 				"\t\t" + source + "\"\n\t}";
-		}		
+		}
+		else {
+			std::cout << "Unrecognised file type: " << file_name << "\n";			
+		}
 	}
-	std::cout << "Unrecognised file type: " << file_name << "\n";
+	else {
+		std::cout << "Could not open file: " << file_name << "\n";
+	}
 	return "";
 }
 
