@@ -13,7 +13,7 @@
 const std::regex include_header("^#include <glsl-([0-9]{3})-?(es)?\\.h>$");
 const std::regex version_header("^#version ([0-9]{3})(?: es)?$");
 const std::regex trim_comments_spaces("^\\s*(?:(?:(.*?)\\s*[/]{2,}.*)|(?:(.*?)\\s*))$");
-const std::regex validate_line("^(?:(?:[a-z][a-zA-Z0-9\\s_+*\\-/=><&|^?:{().,;[\\]]*[;{})])|[}])$");
+const std::regex validate_line("^(?:(?:[a-z#][a-zA-Z0-9\\s_+*\\-/=><&|^?:{().,;[\\]]*[;{})]*)|[}])$");
 // Files should have the extensions: .vs or .vs.glsl or .fs or .fs.glsl
 const std::regex input_file_name_pattern("^.*\\\\(.*)\\.(vs|fs)(?:\\.glsl)?$");
 
